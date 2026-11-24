@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>LimeFun · 下载中心</title>
+  <link rel="stylesheet" href="/static/style.css?v=20261117-ui1">
+  <meta name="theme-color" content="#101513">
+  <link rel="stylesheet" href="/static/interface.css?v=20261120-delete1">
+</head>
+<body class="downloads-page">
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand-lockup brand-link" href="/">
+        <div class="brand-mark">LF</div>
+        <div><div class="brand-name">LimeFun</div><div class="brand-subtitle">本地番剧下载中心</div></div>
+      </a>
+      <div class="topbar-actions">
+        <a class="page-link" href="/">发现番剧</a>
+        <a class="page-link" href="/player.html">播放列表</a>
+        <a class="page-link is-active" href="/downloads.html">下载中心</a>
+      </div>
+    </header>
+    <main class="downloads-main">
+      <section class="browse-heading">
+        <div><div class="kicker">DOWNLOADS</div><h1>下载中心</h1><p id="downloadMeta" class="muted-line">正在读取任务状态</p></div>
+        <button id="downloadRefresh" class="text-button" type="button">刷新状态</button>
+      </section>
+      <nav class="download-tabs" role="tablist" aria-label="下载中心视图">
+        <button class="download-tab is-active" data-view="tasks" role="tab" aria-selected="true" type="button">当前任务 <span id="activeCount" class="count-badge">0</span></button>
+        <button class="download-tab" data-view="history" role="tab" aria-selected="false" type="button">下载记录 <span id="historyCount" class="count-badge">0</span></button>
+      </nav>
+      <section id="tasksView" class="download-section download-view">
+        <div class="section-heading"><h2>当前任务</h2><span class="muted-line">实时进度</span></div>
+        <div class="download-bulk-bar"><label><input id="tasksSelectAll" type="checkbox"> 全选任务</label><span id="tasksSelectionCount">已选 0 项</span><button id="tasksDeleteSelected" class="record-delete-button" disabled>删除所选任务</button><span class="muted-line">停止下载并清理未完成文件，保留完整视频</span></div>
+        <div id="taskList" class="download-list" aria-live="polite"></div>
+      </section>
+      <section id="historyView" class="download-section download-view is-hidden">
+        <div class="section-heading"><h2>下载记录</h2><label class="history-search"><span>查找</span><input id="historySearch" type="search" placeholder="搜索番剧、集数或文件名" autocomplete="off"></label></div>
+        <div class="download-bulk-bar"><label><input id="historySelectAll" type="checkbox"> 全选搜索结果</label><span id="historySelectionCount">已选 0 项</span><button id="historyDeleteSelected" class="record-delete-button" disabled>删除所选记录</button><span class="muted-line">仅删除记录，保留视频文件</span></div>
+        <div id="historyList" class="download-list"></div>
+      </section>
+    </main>
+    <div id="downloadToast" class="toast" role="status"></div>
+  </div>
+  <script src="/static/interface.js?v=20261117-ui1"></script>
+  <script src="/static/downloads.js?v=20261120-delete1"></script>
+</body>
+</html>

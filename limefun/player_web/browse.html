@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>LimeFun · 查看与搜索</title>
+  <link rel="stylesheet" href="/static/style.css?v=20261117-ui1">
+  <meta name="theme-color" content="#101513">
+  <link rel="stylesheet" href="/static/interface.css?v=20261119-season1">
+</head>
+<body class="browse-page">
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand-lockup brand-link" href="/">
+        <div class="brand-mark">LF</div>
+        <div>
+          <div class="brand-name">LimeFun</div>
+          <div class="brand-subtitle">YOUR PERSONAL CINEMA</div>
+        </div>
+      </a>
+      <div class="topbar-actions">
+        <a class="page-link is-active" href="/">发现番剧</a>
+        <a class="page-link" href="/player.html">播放列表</a>
+        <a class="page-link" href="/downloads.html">下载中心</a>
+      </div>
+    </header>
+
+    <main class="browse-main">
+      <section class="browse-heading">
+        <div>
+          <div class="kicker">YOUR COLLECTION, YOUR TIME</div>
+          <h1>今晚，看点喜欢的。</h1><p class="intro-text">发现新故事，也重温心里的那一部。</p>
+          <p id="catalogMeta" class="muted-line">正在读取本地清单</p>
+        </div>
+        <div class="browse-heading-actions">
+          <span id="remoteSyncStatus" class="muted-line"></span>
+          <button id="remoteSync" class="text-button" type="button">同步远程清单</button>
+          <button id="catalogRefresh" class="text-button" type="button">刷新目录</button>
+        </div>
+      </section>
+
+      <div class="quick-filters" role="group" aria-label="快捷筛选">
+        <button type="button" class="quick-filter" data-quick="all" aria-pressed="true">全部作品</button>
+        <button type="button" class="quick-filter" data-quick="local" aria-pressed="false">本地已有</button>
+        <button type="button" class="quick-filter" data-quick="favorites" aria-pressed="false">我的收藏</button>
+        <button type="button" id="resetFilters" class="reset-filters">清空筛选</button>
+      </div>
+      <section class="filter-bar" aria-label="番剧筛选">
+        <label class="filter-field filter-search">
+          <span>名称 / ID</span>
+          <input id="catalogSearch" type="search" placeholder="输入番剧名或 ID" autocomplete="off">
+        </label>
+        <label class="filter-field">
+          <span>首播年份</span>
+          <select id="yearFilter"><option value="">全部年份</option></select>
+        </label>
+        <label class="filter-field">
+          <span>首播季度</span>
+          <select id="seasonFilter" aria-describedby="seasonNote">
+            <option value="">全部季度</option>
+            <option value="1">1月番 · 冬季</option>
+            <option value="4">4月番 · 春季</option>
+            <option value="7">7月番 · 夏季</option>
+            <option value="10">10月番 · 秋季</option>
+            <option value="unknown">季度未知</option>
+          </select>
+        </label>
+        <label class="filter-field">
+          <span>类别</span>
+          <select id="categoryFilter"><option value="">全部类别</option></select>
+        </label>
+        <label class="filter-field">
+          <span>本地文件</span>
+          <select id="localFilter">
+            <option value="">全部</option>
+            <option value="yes">本地已有</option>
+            <option value="no">本地没有</option>
+          </select>
+        </label>
+        <label class="filter-field">
+          <span>收藏状态</span>
+          <select id="favoriteFilter">
+            <option value="">全部</option>
+            <option value="yes">已收藏</option>
+            <option value="no">未收藏</option>
+          </select>
+        </label>
+        <label class="filter-field">
+          <span>状态</span>
+          <select id="statusFilter">
+            <option value="">全部状态</option>
+            <option value="end">已完结</option>
+            <option value="ongoing">连载中</option>
+          </select>
+        </label>
+        <label class="filter-field">
+          <span>排序</span>
+          <select id="sortFilter">
+            <option value="name">名称</option>
+            <option value="year">年份</option>
+            <option value="id">ID</option>
+          </select>
+        </label>
+      </section>
+
+      <p id="seasonNote" class="season-note muted-line" role="status">正在读取本地季度资料…</p>
+
+      <section class="results-heading">
+        <div id="resultCount" class="result-count">0 部</div>
+        <div id="activeFilters" class="active-filters"></div>
+      </section>
+      <section id="catalogGrid" class="catalog-grid" aria-live="polite"></section>
+    </main>
+    <div id="browseToast" class="toast" role="status"></div>
+  </div>
+  <script src="/static/interface.js?v=20261117-ui1"></script>
+  <script src="/static/seasons.js?v=20261119-season2"></script>
+  <script src="/static/browse.js?v=20261119-season2"></script>
+</body>
+</html>

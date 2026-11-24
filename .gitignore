@@ -23,3 +23,7 @@ config.json
 .env
 *.part
 qa/
+/media/
+/mutefun_catalog_full.json
+/download_state.json
+/favorites.json

@@ -1,157 +1,92 @@
 # LimeFun
 
-不依赖官方 App 的番剧搜索、播放与下载工作流。提供命令行下载器、本地 Web 播放器
-和 WebView2 桌面端，媒体文件保存在本地，不上传到网络。
+LimeFun 用于搜索番剧、管理下载和播放本机视频。可以从浏览器管理媒体库，也可以通过 CLI 查询线路和下载剧集。Windows 桌面端使用 WebView2 显示同一个本地播放器。
 
-## 功能
+## 安装与首次启动
 
-- 本地番剧清单搜索：按标题、年份、类别筛选，支持数字 ID 精确匹配。
-- 线路查询与下载：`r2`（APP 专线）、`m2`（网页专线）、`v1`，自动选择可用线路。
-- 单集 / 整季下载，默认 4 并发，`.part` 临时文件 + HTTP Range 断点续传。
-- 下载队列：暂停、继续、取消、删除、失败重试、状态持久化。
-- 本地播放器：查看/搜索页、播放页、下载中心，支持选集、倍速、进度记忆。
-- WebView2 桌面窗口，复用网页端全部功能。
-- 可选远程目录同步，定时更新本地清单和封面。
-
-## 环境要求
-
-- Windows 10 / 11。
-- Python 3.10 或更高版本。
-- 播放器和桌面端需要 Microsoft Edge WebView2 Runtime。
-- 依赖：`cryptography`（接口返回 AES 加密 JSON）。
-- 构建桌面端需要 PyInstaller。
-
-## 安装
+需要 Python 3.10+。以下命令从仓库根目录运行。浏览器播放只需浏览器，打包桌面端还需要 Windows 10/11 和 Microsoft Edge WebView2 Runtime。
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-
-# 仅构建桌面端时需要
-.\.venv\Scripts\python.exe -m pip install pyinstaller
+.\run-server.cmd --archive ".\media\archive" --new ".\media\new"
 ```
 
-## 配置
+打开 <http://127.0.0.1:8765>。把已有视频按番剧放进指定目录即可浏览，播放能力取决于浏览器支持的媒体格式。归档目录也用作 Web 下载目的地。默认目录是 `D:\Anime` 和 `D:\NewAnime`，默认监听本机。与其他本地服务端口冲突时可加 `--port 8766`。
+
+| 页面 | 用途 |
+| --- | --- |
+| `/` | 搜索、筛选和浏览本地库与远程目录 |
+| `/player.html` | 选集、倍速、连播与播放进度 |
+| `/downloads.html` | 管理队列、重试失败项和查看下载记录 |
+
+## 远程目录与配置
+
+播放本地文件无需密钥。远程目录、线路和下载需要可用的 MuteFun 接口，以及你获准使用的解密密钥。在启动服务的同一个终端设置环境变量。
 
 ```powershell
-copy config.example.json config.json
+$env:MUTEFUN_AES_KEY = '填写你的密钥'
+# 可选，自定义接口地址
+# $env:MUTEFUN_API_BASE = 'https://example.com/api'
+.\run-server.cmd
 ```
 
-`config.json` 字段：
+在首页触发远程目录同步，等状态显示结束。成功后会生成 `mutefun_catalog_full.json`，封面缓存在 `covers/`。也可以使用已有的兼容清单。补全年份、重新下载封面时运行 `python -m limefun.sync_catalog`，该命令需要先有清单。
 
-| 字段 | 说明 |
-|---|---|
-| `api_base` | 接口地址 |
-| `aes_key` | 接口解密密钥 |
-| `catalog` | 本地清单文件名 |
-| `output_dir` | 默认下载目录 |
-| `default_player` | `auto` / `r2` / `m2` / `v1` |
-| `timeout` / `retries` | 请求超时与重试次数 |
+复制 `config.example.json` 为 `config.json` 可调整 CLI 默认值。桌面和 Web 的远程连接参数通过环境变量配置。
 
-解密密钥不随仓库分发，推荐通过环境变量提供：
+| CLI 配置 | 作用 |
+| --- | --- |
+| `api_base`、`aes_key` | 接口与解密密钥，环境变量优先 |
+| `catalog` | 清单路径 |
+| `output_dir` | 下载目录，默认 `downloads/` |
+| `default_player` | `auto`、`r2`、`m2` 或 `v1` |
+| `timeout`、`retries` | 请求超时秒数和重试次数 |
+
+## CLI 常用操作
+
+激活虚拟环境后运行，或把 `python` 换成本项目虚拟环境里的 Python。
 
 ```powershell
-$env:MUTEFUN_API_BASE = "https://go.5idm.top/app/api"
-$env:MUTEFUN_AES_KEY  = "<your-key>"
+python -m limefun search "番剧名"
+python -m limefun episodes 2177
+python -m limefun download 2177 1 --player auto
+python -m limefun download-all 2177 --start 1 --end 7 --workers 2
 ```
 
-也可以在 `config.json` 的 `aes_key` 中填写。`config.json` 已被 `.gitignore` 忽略。
+下载前会刷新临时下载地址。下载中写入 `.part` 文件，服务端支持 HTTP Range 时可尝试续传。下载完成后再改为正式文件名。Web 下载中心把当前任务和历史记录分开管理，删除历史记录不会移除已完成的视频。
 
-首次使用需要生成番剧清单：
+## Windows 桌面端
 
 ```powershell
-python sync_catalog.py
+.\.venv\Scripts\python.exe -m pip install pyinstaller pywebview
+.\build.cmd
+.\run.cmd
 ```
 
-清单写入 `mutefun_catalog_full.json`，封面缓存到 `covers/`。
+构建产物位于 `runtime/current/`。桌面端会连接本机 8765 端口并按需启动配套的后台服务。更新目录结构后请重新构建桌面端。更多细节见 [桌面版](docs/README_DESKTOP.md) 和 [播放器](docs/README_PLAYER.md)。
 
-## 命令行
+## 常见问题
+
+- **本地库为空**：检查启动时传给 `--archive` 和 `--new` 的目录是否存在，视频是否放在作品子目录里。
+- **CLI 搜索找不到清单**：先同步远程目录，或在 `config.json` 指定本机已有清单。Web 和桌面端默认读取根目录的 `mutefun_catalog_full.json`。
+- **远程同步失败**：确认变量设置在启动服务的终端，再检查首页的同步状态。已经运行的服务需要重启才能读到环境变量的变更。
+- **桌面窗口加载失败**：确认已按新目录重新构建、WebView2 Runtime 已安装，以及 8765 端口没有被其他程序占用。
+
+## 目录与开发
+
+| 路径 | 内容 |
+| --- | --- |
+| `limefun/` | CLI、HTTP 服务、下载管理和目录同步 |
+| `limefun/player_web/` | HTML、CSS、JavaScript 和季度数据 |
+| `desktop/` | WebView2、Qt、Tk 等桌面入口与图标 |
+| `packaging/` | PyInstaller 配置，标准构建使用 Server 和 WebView 两份 |
+| `docs/`、`tests/` | 使用手册与下载流程回归测试 |
+
+旧的 `python limefun.py`、`python player_server.py`、`python sync_catalog.py` 分别换成 `python -m limefun`、`python -m limefun.player_server`、`python -m limefun.sync_catalog`。原有本地清单、收藏和下载状态仍从仓库根目录读取。
 
 ```powershell
-# 搜索本地清单
-python limefun.py search "碧蓝之海"
-python limefun.py search 2177
-
-# 查询线路和集数
-python limefun.py episodes 2177
-python limefun.py episodes "碧蓝之海 第三季" --player r2
-
-# 下载单集 / 整季
-python limefun.py download 2177 1
-python limefun.py download 2177 1 --player r2 --output D:\Anime
-python limefun.py download-all 2177
-python limefun.py download-all 2177 --start 1 --end 7 --workers 2 --output D:\Anime
+python -m unittest discover -s tests -v
 ```
 
-每集下载前会重新获取预签名 URL，URL 不能长期保存复用。正式文件已存在且大小大于 0
-时跳过；中断后保留 `.part`，再次运行会尝试续传。
-
-## 本地播放器
-
-```powershell
-# 双击 run-server.cmd，或
-python player_server.py
-
-# 指定端口 / 媒体库
-python player_server.py --port 8766 --archive "D:\Anime" --new "D:\NewAnime"
-```
-
-浏览器打开 <http://127.0.0.1:8765>：
-
-- `/`：查看与搜索
-- `/player.html`：播放
-- `/downloads.html`：下载中心
-
-播放器只读取本地媒体库，不修改视频文件。`player_web/season-data.json` 是公开的
-番剧季度元数据，用于播放器的季度视图。
-
-## 桌面端
-
-```powershell
-# 构建（输出到 runtime/current/）
-build.cmd
-
-# 启动
-run.cmd
-```
-
-桌面端使用 WebView2 创建独立窗口，启动时自动检查并拉起本地后台服务；关闭窗口后，
-本次启动的服务进程会退出。也可以双击 `启动LimeFun桌面版.bat`。
-
-## 目录结构
-
-```text
-limefun/
-├─ limefun.py            # CLI：搜索、线路、下载
-├─ download_manager.py   # 下载队列、断点续传、状态持久化
-├─ sync_catalog.py       # 抓取并生成本地番剧清单
-├─ remote_sync.py        # 定时远程目录同步
-├─ player_server.py      # 本地播放器 HTTP 服务
-├─ player_web/           # 播放器前端（HTML/CSS/JS）
-├─ project_paths.py      # 源码/打包后的项目根目录定位
-├─ desktop_*.py          # Tk / WebView2 桌面入口
-├─ limefun.spec 等       # PyInstaller 配置
-├─ config.example.json
-├─ requirements.txt
-├─ run-server.cmd
-└─ run.cmd
-```
-
-## 已知限制
-
-- `mutefun_catalog_full.json` 是本地快照，不会自动更新；需要时重新运行
-  `sync_catalog.py`。
-- 接口域名失效时需要替换 `api_base`；服务端加密方式或密钥变更时需要同步更新
-  解密逻辑。
-- 预签名下载地址由服务端生成，下载速度和可用线路取决于服务端与网络状况。
-- 本工具只负责下载和文件落盘，不自动整理、重命名或生成归档清单。
-- 视频文件、`downloads/`、`covers/`、`runtime/` 和构建产物均不入库。
-
-## 免责声明
-
-本项目仅供学习和技术研究使用。请遵守目标站点的服务条款与当地法律法规，不要
-传播或商用下载内容。
-
-## 许可
-
-本仓库未附带开源许可证。
+本地配置、封面、清单、收藏、下载状态和视频应留在使用者的机器上。远程功能受接口可用性及站点条款约束。本仓库尚未附带开源许可证。
