@@ -1,0 +1,9 @@
+{
+  "api_base": "https://go.5idm.top/app/api",
+  "aes_key": "",
+  "catalog": "mutefun_catalog_full.json",
+  "output_dir": "downloads",
+  "default_player": "auto",
+  "timeout": 30,
+  "retries": 3
+}

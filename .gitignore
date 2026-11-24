@@ -1,0 +1,25 @@
+# Runtime data and dependencies are stored outside the source tree.
+.venv/
+__pycache__/
+*.pyc
+archive/
+build*/
+dist*/
+runtime/
+covers/
+edge-profile/
+test_download/
+downloads/
+out/
+local_library/
+remote_catalog*/
+remote_manga/
+*.log
+*.err
+*.out
+
+# 本地配置与运行时数据
+config.json
+.env
+*.part
+qa/
